@@ -1,0 +1,5 @@
+{
+  "name": "Une Famille en Or : Édition Algérienne",
+  "description": "An interactive Algerian cultural game based on 'Family Feud'. Features a Host dashboard, Buzzer controllers, and an Admin panel with AI-powered semantic answer validation.",
+  "requestFramePermissions": []
+}
