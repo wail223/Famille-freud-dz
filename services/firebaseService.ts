@@ -8,7 +8,7 @@ import { getDatabase, ref, onValue, set, update, push } from "https://www.gstati
 const firebaseConfig = {
   apiKey: "AIzaSyBoo0tLQVN6xRdcrBskNayAHftAnirdFyM",
   authDomain: "familetna-f0d53.firebaseapp.com",
-  databaseURL: "https://familetna-f0d53-default-rtdb.europe-west1.firebasedatabase.app",
+  databaseURL: "https://familetna-f0d53-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "familetna-f0d53",
   storageBucket: "familetna-f0d53.firebasestorage.app",
   messagingSenderId: "432453573012",
