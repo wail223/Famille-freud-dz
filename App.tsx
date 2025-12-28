@@ -51,7 +51,7 @@ const App: React.FC = () => {
     const prev = prevStateRef.current;
     const curr = state;
 
-    // 1. Nouvelle Question (Transition)
+    // 1. Nouvelle Question (Transition Whoosh)
     if (curr.currentRound?.question !== prev.currentRound?.question && curr.currentRound) {
       soundService.play('NEW_QUESTION');
     }
@@ -70,13 +70,16 @@ const App: React.FC = () => {
       soundService.play('STRIKE');
     }
 
-    // 4. Phase de Vol (Alerte)
+    // 4. Phase de Vol (Alerte tension)
     if (curr.isStealPhase && !prev.isStealPhase) {
       soundService.play('STEAL');
     }
 
-    // 5. Attribution des points / Victoire de manche
-    if (curr.status === 'IDLE' && prev.status !== 'IDLE' && (curr.teamAScore > prev.teamAScore || curr.teamBScore > prev.teamBScore)) {
+    // 5. Attribution des points / Victoire de manche (Fanfare)
+    // Se déclenche si le score global d'une équipe a augmenté
+    const scoreAIncreased = curr.teamAScore > prev.teamAScore;
+    const scoreBIncreased = curr.teamBScore > prev.teamBScore;
+    if (scoreAIncreased || scoreBIncreased) {
       soundService.play('WIN');
     }
 

@@ -31,7 +31,7 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
         
         <div className="min-h-[40px] md:min-h-[70px] flex flex-col items-center justify-center px-4 w-full max-w-6xl">
             {currentRound ? (
-            <>
+            <div key={currentRound.question} className="animate-in fade-in zoom-in duration-500 flex flex-col items-center">
                 <h2 dir="rtl" className="text-xl md:text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-center leading-tight">
                     {currentRound.question}
                 </h2>
@@ -40,16 +40,19 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
                         <span dir="rtl" className="text-[10px] md:text-xs font-black text-white">⚠️ محاولة سرقة النقاط ⚠️</span>
                     </div>
                 )}
-            </>
+            </div>
             ) : (
                 <h2 className="text-base md:text-xl font-bold text-slate-500 animate-pulse uppercase tracking-widest italic">في انتظار السؤال...</h2>
             )}
         </div>
       </div>
 
-      {/* Plateau Central : Grille hautement optimisée pour tenir sur un écran sans scroll */}
+      {/* Plateau Central : Key ajoutée pour forcer le remount total à chaque question */}
       <div className="z-10 flex-1 w-full max-w-[1300px] px-2 md:px-6 py-2 flex items-center justify-center overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-3 md:gap-x-6 gap-y-2 md:gap-y-3 w-full h-full max-h-[65vh]">
+        <div 
+          key={currentRound?.question || 'idle'} 
+          className="grid grid-cols-1 md:grid-cols-2 gap-x-3 md:gap-x-6 gap-y-2 md:gap-y-3 w-full h-full max-h-[65vh]"
+        >
             {currentRound ? (
             currentRound.top_10.map((ans, idx) => {
                 const isGold = idx === 0;
@@ -65,7 +68,7 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
                                 <span className="text-xl md:text-3xl font-black italic text-black/20">{idx + 1}</span>
                             </div>
                             
-                            {/* Face Révélée : Support Arabe et texte flexible avec ajustement de taille dynamique */}
+                            {/* Face Révélée */}
                             <div dir="rtl" className={`board-slot-back absolute inset-0 border-[3px] rounded-lg flex items-center justify-between px-3 md:px-5 shadow-xl overflow-hidden ${bgClass} ${isGold ? 'border-amber-200' : 'border-slate-50'}`}>
                                 <div className="flex-1 min-w-0 pr-2">
                                     <span className={`font-black text-black leading-none block truncate ${
