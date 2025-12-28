@@ -55,11 +55,17 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Amélioration de la propagation de l'état
   const updateState = useCallback((partial: Partial<GameState>) => {
     setState(prev => {
       const newState = { ...prev, ...partial };
-      channelRef.current?.postMessage({ type: 'UPDATE_STATE', payload: newState });
-      syncStateToFirebase(newState);
+      
+      // On exécute les effets secondaires de manière asynchrone pour ne pas bloquer le rendu
+      setTimeout(() => {
+        channelRef.current?.postMessage({ type: 'UPDATE_STATE', payload: newState });
+        syncStateToFirebase(newState);
+      }, 0);
+      
       return newState;
     });
   }, []);
@@ -73,8 +79,12 @@ const App: React.FC = () => {
         currentTurn: side, 
         status: 'PLAYING' 
       };
-      channelRef.current?.postMessage({ type: 'UPDATE_STATE', payload: newState });
-      syncStateToFirebase(newState);
+      
+      setTimeout(() => {
+        channelRef.current?.postMessage({ type: 'UPDATE_STATE', payload: newState });
+        syncStateToFirebase(newState);
+      }, 0);
+
       return newState;
     });
   }, []);

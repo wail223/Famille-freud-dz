@@ -10,7 +10,6 @@ export default defineConfig({
     minify: 'esbuild'
   },
   define: {
-    // On s'assure que process.env existe pour les bibliothèques comme @google/genai
     'process.env': {
         API_KEY: JSON.stringify(process.env.API_KEY || "")
     }

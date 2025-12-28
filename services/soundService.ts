@@ -1,10 +1,15 @@
 
 const SOUNDS = {
-  BUZZER: 'https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3',
-  CORRECT: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
-  STRIKE: 'https://assets.mixkit.co/active_storage/sfx/2958/2958-preview.mp3',
-  STEAL: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
-  WIN: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'
+  // Buzzer d'alerte type TV
+  BUZZER: 'https://cdn.pixabay.com/audio/2022/10/30/audio_3396e3876e.mp3', 
+  // Ding de bonne réponse classique
+  CORRECT: 'https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1513b.mp3',
+  // Buzzer d'erreur (Le X)
+  STRIKE: 'https://cdn.pixabay.com/audio/2022/03/24/audio_7399066487.mp3',
+  // Tension pour le vol de points
+  STEAL: 'https://cdn.pixabay.com/audio/2021/08/04/audio_275e6d87f7.mp3',
+  // Fanfare de victoire
+  WIN: 'https://cdn.pixabay.com/audio/2024/02/07/audio_097498c114.mp3'
 };
 
 class SoundService {
@@ -15,6 +20,7 @@ class SoundService {
     Object.entries(SOUNDS).forEach(([key, url]) => {
       const audio = new Audio(url);
       audio.preload = 'auto';
+      audio.volume = 0.5;
       this.audioCache.set(key, audio);
     });
   }

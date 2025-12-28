@@ -16,6 +16,26 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
   const [guessInput, setGuessInput] = useState('');
   const [feedback, setFeedback] = useState('');
 
+  const handleFullReset = () => {
+    const confirmMessage = "⚠️ ATTENTION : Voulez-vous vraiment réinitialiser TOUTE la partie ?\n\nCela effacera :\n- Les scores des deux équipes (Remis à 0)\n- Le round actuel\n- L'historique des fautes";
+    
+    if (window.confirm(confirmMessage)) {
+      updateState({
+        currentRound: null,
+        score: 0,
+        teamAScore: 0,
+        teamBScore: 0,
+        strikes: 0,
+        buzzerWinner: null,
+        currentTurn: null,
+        isStealPhase: false,
+        status: 'IDLE',
+      });
+      setFeedback("⚠️ PARTIE RÉINITIALISÉE À ZÉRO");
+      setTimeout(() => setFeedback(""), 3000);
+    }
+  };
+
   const handleNewRound = async () => {
     if (!themeInput) return;
     setLoading(true);
@@ -168,9 +188,7 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
 
     updateState(nextUpdate);
 
-    // Retour au jeu normal après l'animation de la croix
     setTimeout(() => {
-      // On passe explicitement newStrikes pour être sûr de ne pas revenir en arrière
       updateState({ status: 'PLAYING', strikes: newStrikes });
     }, 2000);
   };
@@ -187,6 +205,13 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
             <h1 className="text-lg font-black uppercase tracking-tight">Famille en Or DZ</h1>
         </div>
         <div className="flex gap-4 items-center">
+            <button 
+              onClick={handleFullReset}
+              className="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-1.5 rounded-full border border-red-500/30 text-[10px] font-black transition-all flex items-center gap-2"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              RÉINITIALISER PARTIE
+            </button>
             <div className="flex items-center gap-2 bg-slate-800 px-4 py-1.5 rounded-full border border-slate-700">
                 <div className={`w-2 h-2 rounded-full ${state.status !== 'IDLE' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 animate-pulse'}`}></div>
                 <span className="text-[10px] font-black uppercase tracking-widest">{state.status}</span>
@@ -207,7 +232,7 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
           <section className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
              <div className="flex justify-between items-center mb-4">
                 <span className="text-[10px] font-black text-slate-500 uppercase">État des Équipes</span>
-                <button onClick={resetBuzzer} className="text-[9px] font-black bg-red-500/10 text-red-500 px-3 py-1 rounded-full border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">RÉINITIALISER BUZZERS</button>
+                <button onClick={resetBuzzer} className="text-[9px] font-black bg-slate-800 text-slate-400 px-3 py-1 rounded-full border border-slate-700 hover:bg-amber-500 hover:text-black transition-all">RÉINITIALISER BUZZERS</button>
              </div>
              <div className="flex gap-3 mb-6">
                 <div className={`flex-1 h-4 rounded-full transition-all border-2 ${state.currentTurn === 'left' ? 'bg-blue-600 border-white shadow-[0_0_12px_rgba(37,99,235,0.5)]' : 'bg-slate-800 border-transparent opacity-30'}`}></div>
