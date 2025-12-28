@@ -1,15 +1,17 @@
 
 const SOUNDS = {
-  // Buzzer d'alerte type TV
-  BUZZER: 'https://cdn.pixabay.com/audio/2022/10/30/audio_3396e3876e.mp3', 
-  // Ding de bonne réponse classique
-  CORRECT: 'https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1513b.mp3',
-  // Buzzer d'erreur (Le X)
-  STRIKE: 'https://cdn.pixabay.com/audio/2022/03/24/audio_7399066487.mp3',
-  // Tension pour le vol de points
-  STEAL: 'https://cdn.pixabay.com/audio/2021/08/04/audio_275e6d87f7.mp3',
-  // Fanfare de victoire
-  WIN: 'https://cdn.pixabay.com/audio/2024/02/07/audio_097498c114.mp3'
+  // Classic Game Show Buzzer pour les erreurs (Le 'X')
+  STRIKE: 'https://assets.mixkit.co/active_storage/sfx/2958/2958-preview.mp3', 
+  // 'Ding' cristallin pour les bonnes réponses
+  CORRECT: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
+  // Fanfare de victoire pour la fin d'une manche
+  WIN: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
+  // Son de tension dramatique pour la phase de vol
+  STEAL: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
+  // Carillon/Whoosh pour l'apparition d'une nouvelle question
+  NEW_QUESTION: 'https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3',
+  // Buzzer physique pour les candidats
+  BUZZER: 'https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3'
 };
 
 class SoundService {
@@ -25,22 +27,35 @@ class SoundService {
     });
   }
 
+  // Déverrouille le contexte audio sur iPhone/Android après le premier toucher
   unlock() {
     if (this.isUnlocked) return;
     this.audioCache.forEach((audio) => {
+      // Lecture/Pause immédiate pour autoriser les lectures futures par script
       audio.play().then(() => {
         audio.pause();
         audio.currentTime = 0;
       }).catch(() => {});
     });
     this.isUnlocked = true;
+    console.log("Audio Engine Unlocked via Interaction");
   }
 
   play(soundKey: keyof typeof SOUNDS) {
     const audio = this.audioCache.get(soundKey);
     if (audio) {
+      // On utilise une version clonée ou on réinitialise pour permettre des sons rapides successifs
       audio.currentTime = 0;
-      audio.play().catch(e => console.warn("Audio error:", e));
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Si la lecture échoue (ex: encore bloqué), on tente une lecture sur un clone
+          const clone = audio.cloneNode() as HTMLAudioElement;
+          clone.volume = audio.volume;
+          clone.play().catch(e => console.warn(`Audio play failed for ${soundKey}:`, e));
+        });
+      }
     }
   }
 }
