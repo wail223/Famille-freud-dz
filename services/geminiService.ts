@@ -1,22 +1,26 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialisation stricte selon les recommandations de sécurité
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAIClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("Clé API Gemini manquante. Veuillez configurer API_KEY.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const generateRound = async (theme: string) => {
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Thème : ${theme}. 
     Génère un bloc JSON pour le jeu "Une Famille en Or" Édition Algérienne. 
     
     RÈGLES CRITIQUES :
-    1. Langue : Utilise l'ALPHABET ARABE (lettres arabes) uniquement.
-    2. Dialecte : Utilise la DARIJA ALGÉRIENNE (parlé local).
-    3. Contenu : Culture algérienne, humour, vie quotidienne (cuisine, bureaucratie, fêtes, transport).
-    4. Format : 10 réponses classées de la plus populaire à la moins populaire.
-    
-    Exemple de style : "طوموبيل" au lieu de "Tomobil", "كوزينة" au lieu de "Kouzina".`,
+    1. Langue : Utilise l'ALPHABET ARABE uniquement.
+    2. Dialecte : Utilise la DARIJA ALGÉRIENNE.
+    3. Contenu : Culture algérienne (ex: nourriture, bureaucratie, fêtes, transport).
+    4. Format : EXACTEMENT 10 réponses classées par points décroissants.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -42,15 +46,16 @@ export const generateRound = async (theme: string) => {
     }
   });
 
-  return JSON.parse(response.text);
+  return JSON.parse(response.text || "{}");
 };
 
 export const validateAnswer = async (input: string, top10: any[]) => {
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Vérifie si la réponse "${input}" correspond à l'une de ces réponses en Darija : ${JSON.stringify(top10)}. 
-    Prends en compte les synonymes et les variations d'écriture en alphabet arabe. 
-    Réponds en JSON.`,
+    Prends en compte les synonymes et variations d'écriture en alphabet arabe. 
+    Réponds EXCLUSIVEMENT en JSON.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -65,5 +70,5 @@ export const validateAnswer = async (input: string, top10: any[]) => {
     }
   });
 
-  return JSON.parse(response.text);
+  return JSON.parse(response.text || "{}");
 };

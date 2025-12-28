@@ -10,7 +10,9 @@ export default defineConfig({
     minify: 'esbuild'
   },
   define: {
-    // Permet de supporter à la fois process.env (Vite local) et import.meta.env (Prod)
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || "")
+    // On s'assure que process.env existe pour les bibliothèques comme @google/genai
+    'process.env': {
+        API_KEY: JSON.stringify(process.env.API_KEY || "")
+    }
   }
 });
