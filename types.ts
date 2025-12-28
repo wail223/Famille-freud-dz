@@ -18,9 +18,13 @@ export interface GameState {
     top_10: Answer[];
     anecdote_host: string;
   } | null;
-  score: number;
+  score: number; // Points accumulés dans la manche actuelle
+  teamAScore: number; // Score global Équipe A
+  teamBScore: number; // Score global Équipe B
   strikes: number;
   buzzerWinner: 'left' | 'right' | null;
+  currentTurn: 'left' | 'right' | null;
+  isStealPhase: boolean; // Si on est dans la phase de vol (après 3 fautes)
   status: 'IDLE' | 'BUZZING' | 'PLAYING' | 'STRIKE_ANIMATION';
 }
 
