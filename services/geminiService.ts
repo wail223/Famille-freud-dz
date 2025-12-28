@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 const getAIClient = () => {
   // Utilisation de process.env.API_KEY injecté par Vite
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("Clé API Gemini manquante. Veuillez configurer API_KEY.");
   }
