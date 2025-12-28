@@ -96,8 +96,16 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
     try {
       const result = await validateAnswer(guessInput, state.currentRound.top_10);
       if (result.match && result.id) {
-        handleManualReveal(result.id);
-        setGuessInput('');
+        // Vérification : si la réponse est déjà citée
+        const existingAnswer = state.currentRound.top_10.find(a => a.id === result.id);
+        if (existingAnswer?.revealed) {
+          setFeedback("⚠️ DÉJÀ CITÉ !");
+          triggerStrike();
+          setTimeout(() => setFeedback(""), 2000);
+        } else {
+          handleManualReveal(result.id);
+          setGuessInput('');
+        }
       } else {
         triggerStrike();
       }
@@ -124,8 +132,8 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
         </button>
       </header>
 
-      {/* Main content with massive padding-bottom to avoid overlap by fixed footer */}
-      <main className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 pb-[340px] custom-scroll">
+      {/* Main content avec padding-bottom augmenté à 400px pour éviter tout chevauchement */}
+      <main className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 pb-[400px] custom-scroll">
         {/* Nouveau Round */}
         <section className="bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-2xl">
           <div className="flex flex-col gap-3">
@@ -149,11 +157,11 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
 
         {/* Scores Équipes */}
         <div className="grid grid-cols-2 gap-3">
-          <div className={`p-5 rounded-3xl border-2 text-center transition-all ${state.currentTurn === 'left' ? 'bg-blue-600 border-white' : 'bg-slate-900 border-slate-800 opacity-40 grayscale'}`}>
+          <div className={`p-5 rounded-3xl border-2 text-center transition-all ${state.currentTurn === 'left' ? 'bg-blue-600 border-white shadow-[0_0_20px_rgba(37,99,235,0.3)]' : 'bg-slate-900 border-slate-800 opacity-40 grayscale'}`}>
             <span className="text-[10px] block font-black uppercase mb-1">Équipe A</span>
             <span className="text-3xl font-black">{state.teamAScore}</span>
           </div>
-          <div className={`p-5 rounded-3xl border-2 text-center transition-all ${state.currentTurn === 'right' ? 'bg-red-600 border-white' : 'bg-slate-900 border-slate-800 opacity-40 grayscale'}`}>
+          <div className={`p-5 rounded-3xl border-2 text-center transition-all ${state.currentTurn === 'right' ? 'bg-red-600 border-white shadow-[0_0_20px_rgba(220,38,38,0.3)]' : 'bg-slate-900 border-slate-800 opacity-40 grayscale'}`}>
             <span className="text-[10px] block font-black uppercase mb-1">Équipe B</span>
             <span className="text-3xl font-black">{state.teamBScore}</span>
           </div>
@@ -209,26 +217,28 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
         )}
       </main>
 
-      {/* Footer de saisie collant pour iPhone - Optimisé avec un padding fixe plus élevé au-dessus */}
+      {/* Footer de saisie collant - Fixé en bas avec un style propre */}
       {state.currentRound && (
-        <div className="fixed bottom-[20px] left-4 right-4 bg-slate-900/95 backdrop-blur-2xl p-5 rounded-[2.5rem] border border-slate-700/50 shadow-[0_-20px_60px_rgba(0,0,0,0.8)] z-50">
-          <input 
-            dir="rtl" 
-            type="text" 
-            value={guessInput} 
-            onChange={(e) => setGuessInput(e.target.value)} 
-            placeholder="Entrez la réponse..." 
-            className="w-full bg-transparent border-b-2 border-slate-700 py-3 mb-4 text-2xl text-center font-['Cairo'] outline-none focus:border-green-500" 
-            onKeyDown={(e) => e.key === 'Enter' && handleGuess()} 
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <button onClick={handleGuess} disabled={loading} className="bg-green-600 text-white font-black py-5 rounded-2xl text-sm uppercase active:bg-green-700 transition-colors shadow-lg shadow-green-900/20">VÉRIFIER</button>
-            <button onClick={triggerStrike} className="bg-red-600 text-white font-black py-5 rounded-2xl text-sm uppercase active:bg-red-700 transition-colors shadow-lg shadow-red-900/20">FAUTE (X)</button>
-          </div>
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            <button onClick={() => awardPointsAndEndRound('left')} className="bg-blue-600/30 text-blue-400 border border-blue-500/30 py-3 rounded-xl text-[9px] font-black uppercase active:bg-blue-600 active:text-white transition-all">Gain A</button>
-            <button onClick={() => awardPointsAndEndRound('right')} className="bg-red-600/30 text-red-400 border border-red-500/30 py-3 rounded-xl text-[9px] font-black uppercase active:bg-red-600 active:text-white transition-all">Gain B</button>
-            <button onClick={resetBuzzer} className="bg-slate-700 text-slate-300 py-3 rounded-xl text-[9px] font-black uppercase active:bg-slate-600">Buzzer</button>
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(20px+env(safe-area-inset-bottom))] z-50">
+          <div className="bg-slate-900/95 backdrop-blur-2xl p-5 rounded-[2.5rem] border border-slate-700/50 shadow-[0_-20px_60px_rgba(0,0,0,0.8)] max-w-lg mx-auto">
+            <input 
+              dir="rtl" 
+              type="text" 
+              value={guessInput} 
+              onChange={(e) => setGuessInput(e.target.value)} 
+              placeholder="Entrez la réponse..." 
+              className="w-full bg-transparent border-b-2 border-slate-700 py-3 mb-4 text-2xl text-center font-['Cairo'] outline-none focus:border-green-500" 
+              onKeyDown={(e) => e.key === 'Enter' && handleGuess()} 
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <button onClick={handleGuess} disabled={loading} className="bg-green-600 text-white font-black py-5 rounded-2xl text-sm uppercase active:bg-green-700 transition-colors shadow-lg shadow-green-900/20">VÉRIFIER</button>
+              <button onClick={triggerStrike} className="bg-red-600 text-white font-black py-5 rounded-2xl text-sm uppercase active:bg-red-700 transition-colors shadow-lg shadow-red-900/20">FAUTE (X)</button>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-4">
+              <button onClick={() => awardPointsAndEndRound('left')} className="bg-blue-600/30 text-blue-400 border border-blue-500/30 py-3 rounded-xl text-[9px] font-black uppercase active:bg-blue-600 active:text-white transition-all">Gain A</button>
+              <button onClick={() => awardPointsAndEndRound('right')} className="bg-red-600/30 text-red-400 border border-red-500/30 py-3 rounded-xl text-[9px] font-black uppercase active:bg-red-600 active:text-white transition-all">Gain B</button>
+              <button onClick={resetBuzzer} className="bg-slate-700 text-slate-300 py-3 rounded-xl text-[9px] font-black uppercase active:bg-slate-600">Buzzer</button>
+            </div>
           </div>
         </div>
       )}
