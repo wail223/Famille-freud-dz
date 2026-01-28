@@ -6,7 +6,7 @@ import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebase
  * Configuration Firebase pour le projet : familetna-f0d53
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyBoo0tLQVN6xRdcrBskNayAHftAnirdFyM",
+  apiKey: "AIzaSyArdIzFUUDFMR510ylL-hmY-GvzuB2lQII",
   authDomain: "familetna-f0d53.firebaseapp.com",
   databaseURL: "https://familetna-f0d53-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "familetna-f0d53",
