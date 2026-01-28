@@ -55,9 +55,10 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
       });
       setThemeInput('');
       setFeedback("");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setFeedback("Erreur API Gemini. Vérifiez votre clé.");
+      // Affiche le message d'erreur réel pour aider au débogage
+      setFeedback(`ERREUR: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -113,8 +114,8 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
       } else {
         triggerStrike();
       }
-    } catch (error) {
-      setFeedback("Erreur réseau.");
+    } catch (error: any) {
+      setFeedback(`Erreur: ${error.message}`);
     } finally {
       setLoading(false);
     }
