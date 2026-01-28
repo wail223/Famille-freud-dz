@@ -21,7 +21,6 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
     <div className="h-screen w-full flex flex-col items-center justify-between p-2 md:p-4 bg-[#0c0e14] relative overflow-hidden text-white font-['Cairo']">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#1e293b_0%,_#0c0e14_100%)] opacity-50 pointer-events-none"></div>
       
-      {/* En-tête compact */}
       <div className="z-10 w-full flex flex-col items-center shrink-0 pt-1">
         <div className="gold-gradient px-4 md:px-6 py-1 rounded-full shadow-lg border-b-2 border-amber-900/40 transform scale-75 md:scale-90 mb-1">
           <h1 className="text-lg md:text-2xl font-black text-black tracking-tighter uppercase italic leading-none">
@@ -47,8 +46,9 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
         </div>
       </div>
 
-      {/* Plateau Central : Key ajoutée pour forcer le remount total à chaque question */}
       <div className="z-10 flex-1 w-full max-w-[1300px] px-2 md:px-6 py-2 flex items-center justify-center overflow-hidden">
+        {/* La clé sur le conteneur de grille (key={currentRound?.question}) force React à détruire et recréer 
+            tous les composants enfants instantanément lors d'un changement de question. */}
         <div 
           key={currentRound?.question || 'idle'} 
           className="grid grid-cols-1 md:grid-cols-2 gap-x-3 md:gap-x-6 gap-y-2 md:gap-y-3 w-full h-full max-h-[65vh]"
@@ -63,12 +63,9 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
                 return (
                     <div key={ans.id} className={`board-slot h-full min-h-[40px] md:min-h-[55px] w-full relative ${ans.revealed ? 'revealed' : ''}`}>
                         <div className="board-slot-inner w-full h-full relative">
-                            {/* Face Cachée */}
                             <div className={`board-slot-front absolute inset-0 border-2 rounded-lg flex items-center justify-center shadow-lg ${bgClass} border-white/20`}>
                                 <span className="text-xl md:text-3xl font-black italic text-black/20">{idx + 1}</span>
                             </div>
-                            
-                            {/* Face Révélée */}
                             <div dir="rtl" className={`board-slot-back absolute inset-0 border-[3px] rounded-lg flex items-center justify-between px-3 md:px-5 shadow-xl overflow-hidden ${bgClass} ${isGold ? 'border-amber-200' : 'border-slate-50'}`}>
                                 <div className="flex-1 min-w-0 pr-2">
                                     <span className={`font-black text-black leading-none block truncate ${
@@ -93,7 +90,6 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
         </div>
       </div>
 
-      {/* Bas de l'écran (Scores et Croix) */}
       <div className="z-10 w-full flex flex-col items-center gap-2 md:gap-3 pb-2 shrink-0">
         <div className="flex gap-2">
           {[1, 2, 3].map(i => (
@@ -104,21 +100,16 @@ const HostView: React.FC<HostViewProps> = ({ state }) => {
         </div>
 
         <div className="flex items-center gap-3 md:gap-10 w-full max-w-5xl justify-center px-2">
-            {/* Team A */}
             <div className={`transition-all duration-500 flex flex-col items-center ${currentTurn === 'left' ? 'scale-105' : 'opacity-40 grayscale'}`}>
                 <div className="bg-blue-600 text-white px-4 py-0.5 rounded-lg border-b-2 border-blue-800 shadow-lg">
                     <span className="text-xs md:text-base font-black uppercase tracking-tighter">Équipe A</span>
                 </div>
                 <span className="text-lg md:text-2xl font-black text-blue-400 mt-0.5 font-sans">{teamAScore}</span>
             </div>
-            
-            {/* Round Score */}
             <div className="bg-black/90 border border-amber-500 rounded-xl px-4 py-1.5 md:py-2 flex flex-col items-center shadow-2xl min-w-[100px] md:min-w-[180px]">
                 <span dir="rtl" className="text-amber-500 text-[7px] md:text-[9px] font-black tracking-widest mb-0.5">الرصيد الحالي</span>
                 <span className="text-2xl md:text-5xl font-black text-white italic font-sans">{score}</span>
             </div>
-
-            {/* Team B */}
             <div className={`transition-all duration-500 flex flex-col items-center ${currentTurn === 'right' ? 'scale-105' : 'opacity-40 grayscale'}`}>
                 <div className="bg-red-600 text-white px-4 py-0.5 rounded-lg border-b-2 border-red-800 shadow-lg">
                     <span className="text-xs md:text-base font-black uppercase tracking-tighter">Équipe B</span>

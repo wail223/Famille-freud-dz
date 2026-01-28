@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 /**
  * Configuration Firebase pour le projet : familetna-f0d53
@@ -18,21 +18,34 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
 
-// Chemin racine dans la base de données
-const GAME_PATH = 'game_state';
+let currentSessionId: string | null = null;
+
+/**
+ * Initialise l'ID de session pour isoler les parties
+ */
+export const setSessionId = (sessionId: string) => {
+  currentSessionId = sessionId.toUpperCase().trim();
+};
+
+const getSessionPath = (subPath: string) => {
+  if (!currentSessionId) throw new Error("Aucune session initialisée");
+  return `sessions/${currentSessionId}/${subPath}`;
+};
 
 /**
  * Met à jour l'état global sur Firebase
  */
 export const syncStateToFirebase = async (newState: any) => {
-  await set(ref(db, GAME_PATH), newState);
+  if (!currentSessionId) return;
+  await set(ref(db, getSessionPath('game_state')), newState);
 };
 
 /**
  * Écoute les changements d'état en temps réel
  */
 export const listenToFirebaseState = (callback: (state: any) => void) => {
-  const stateRef = ref(db, GAME_PATH);
+  if (!currentSessionId) return () => {};
+  const stateRef = ref(db, getSessionPath('game_state'));
   return onValue(stateRef, (snapshot) => {
     const data = snapshot.val();
     if (data) callback(data);
@@ -43,7 +56,8 @@ export const listenToFirebaseState = (callback: (state: any) => void) => {
  * Gère le buzz via une transaction simple
  */
 export const sendBuzzToFirebase = async (side: 'left' | 'right') => {
-  const buzzRef = ref(db, 'buzz_event');
+  if (!currentSessionId) return;
+  const buzzRef = ref(db, getSessionPath('buzz_event'));
   await set(buzzRef, { side, timestamp: Date.now() });
 };
 
@@ -51,7 +65,8 @@ export const sendBuzzToFirebase = async (side: 'left' | 'right') => {
  * Écoute les événements de buzz
  */
 export const listenToBuzzEvents = (callback: (side: 'left' | 'right') => void) => {
-  const buzzRef = ref(db, 'buzz_event');
+  if (!currentSessionId) return () => {};
+  const buzzRef = ref(db, getSessionPath('buzz_event'));
   return onValue(buzzRef, (snapshot) => {
     const data = snapshot.val();
     if (data && data.side) {
