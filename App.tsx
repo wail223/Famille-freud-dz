@@ -87,10 +87,10 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!sessionCode) return;
 
-    // 1. Initialiser le service Firebase avec le code
+    // Note: setSessionId est aussi appelé dans handleCreate/joinSession pour garantir l'ordre
     setSessionId(sessionCode);
 
-    // 2. Créer un channel unique pour cette session
+    // 2. Créer un channel unique pour cette session (Sync local)
     channelRef.current = new BroadcastChannel(`famille_en_or_dz_${sessionCode}`);
     
     channelRef.current.onmessage = (event: MessageEvent<SyncMessage>) => {
@@ -101,8 +101,11 @@ const App: React.FC = () => {
       }
     };
 
+    // 3. Écouter Firebase (Sync Distant)
     const unsubscribeState = listenToFirebaseState((newState) => {
-      if (newState) setState(newState);
+      if (newState) {
+        setState(newState);
+      }
     });
 
     const unsubscribeBuzz = listenToBuzzEvents((side) => {
@@ -128,21 +131,36 @@ const App: React.FC = () => {
 
   const handleCreateGame = () => {
     const newCode = generateSessionCode();
+    
+    // 1. Configurer le service Firebase IMMÉDIATEMENT
+    setSessionId(newCode);
+    
+    // 2. Mettre à jour l'UI
     setSessionCode(newCode);
-    // On assume qu'une nouvelle session démarre à zéro
-    setState(INITIAL_STATE);
+    
+    // 3. Réinitialiser l'état et forcer l'écriture dans Firebase pour créer la session
+    const startState = INITIAL_STATE;
+    setState(startState);
+    syncStateToFirebase(startState);
   };
 
   const joinSession = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputCode.trim().length > 0) {
-      setSessionCode(inputCode.toUpperCase().trim());
+      const code = inputCode.toUpperCase().trim();
+      
+      // 1. Configurer le service Firebase IMMÉDIATEMENT
+      setSessionId(code);
+      
+      // 2. Mettre à jour l'UI
+      setSessionCode(code);
     }
   };
 
   const updateState = useCallback((partial: Partial<GameState>) => {
     setState(prev => {
       const newState = { ...prev, ...partial };
+      // On utilise setTimeout pour ne pas bloquer le rendu, mais on sync tout de suite
       setTimeout(() => {
         channelRef.current?.postMessage({ type: 'UPDATE_STATE', payload: newState });
         syncStateToFirebase(newState);
