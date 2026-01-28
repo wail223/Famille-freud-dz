@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
     define: {
       // Injecte la clé API dans le code client de manière sécurisée lors du build
       'process.env': {
-          API_KEY: JSON.stringify(env.API_KEY || "")
+          API_KEY: JSON.stringify(env.API_KEY || "AIzaSyArdIzFUUDFMR510ylL-hmY-GvzuB2lQII")
       }
     }
   };
