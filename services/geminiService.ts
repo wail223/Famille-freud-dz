@@ -5,11 +5,11 @@ const getAIClient = () => {
   // @ts-ignore
   const apiKey = process.env.API_KEY;
   
-  // Vérifie si la clé est manquante ou si c'est encore le texte par défaut
-  if (!apiKey || apiKey === "AIzaSyArdIzFUUDFMR510ylL-hmY-GvzuB2lQII") {
-    console.error("❌ CLÉ API INVALIDE : Ouvrez le fichier .env et collez votre vraie clé API à la place du texte par défaut.");
-    throw new Error("Clé API invalide. Modifiez le fichier .env avec votre vraie clé.");
+  if (!apiKey) {
+    console.error("❌ CLÉ API MANQUANTE");
+    throw new Error("Clé API manquante. Vérifiez le fichier .env");
   }
+  
   return new GoogleGenAI({ apiKey });
 };
 
@@ -17,7 +17,7 @@ export const generateRound = async (theme: string) => {
   try {
     const ai = getAIClient();
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash", // Utilisation du modèle Flash 2.0 plus stable et rapide
+      model: "gemini-2.0-flash",
       contents: `Thème : ${theme}. 
       Génère un bloc JSON pour le jeu "Une Famille en Or" Édition Algérienne. 
       
@@ -58,7 +58,15 @@ export const generateRound = async (theme: string) => {
     return JSON.parse(response.text);
   } catch (error: any) {
     console.error("Erreur Gemini generateRound:", error);
-    throw new Error(error.message || "Erreur lors de la génération");
+    
+    let msg = error.message || "Erreur lors de la génération";
+    
+    // Détection des erreurs courantes de clé API
+    if (msg.includes("403") || msg.includes("400") || msg.includes("API key")) {
+      msg = "⛔ CLÉ INVALIDE. La clé Firebase ne fonctionne pas pour l'IA. Créez une clé gratuite sur : aistudio.google.com";
+    }
+    
+    throw new Error(msg);
   }
 };
 
@@ -87,6 +95,10 @@ export const validateAnswer = async (input: string, top10: any[]) => {
     return JSON.parse(response.text || "{}");
   } catch (error: any) {
     console.error("Erreur Gemini validateAnswer:", error);
-    throw new Error(error.message || "Erreur de validation");
+    let msg = error.message;
+    if (msg.includes("403") || msg.includes("API key")) {
+        msg = "⛔ Clé API invalide. Utilisez une clé de aistudio.google.com";
+    }
+    throw new Error(msg);
   }
 };
