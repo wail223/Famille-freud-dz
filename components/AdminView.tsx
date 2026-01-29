@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { GameState } from '../types';
 import { generateRound, validateAnswer } from '../services/geminiService';
@@ -57,7 +56,6 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
       setFeedback("");
     } catch (error: any) {
       console.error(error);
-      // Affiche le message d'erreur réel pour aider au débogage
       setFeedback(`ERREUR: ${error.message}`);
     } finally {
       setLoading(false);
@@ -80,7 +78,6 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
   };
 
   const awardPointsAndEndRound = (winnerSide: 'left' | 'right') => {
-    // Jouer le son de victoire au clic
     soundService.play('WIN');
     
     updateState({
@@ -103,7 +100,6 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
       if (result.match && result.id) {
         const existingAnswer = state.currentRound.top_10.find(a => a.id === result.id);
         if (existingAnswer?.revealed) {
-          // Si la réponse est déjà citée, on traite cela comme une erreur (X)
           setFeedback("⚠️ DÉJÀ CITÉ !");
           triggerStrike();
           setTimeout(() => setFeedback(""), 2000);
@@ -131,9 +127,11 @@ const AdminView: React.FC<AdminViewProps> = ({ state, updateState, resetBuzzer }
     <div className="h-screen bg-[#0a0c10] text-white flex flex-col overflow-hidden font-sans">
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-4 px-6 flex justify-between items-center shrink-0 pt-[env(safe-area-inset-top)]">
         <h1 className="text-sm font-black text-amber-500 tracking-[0.2em]">RÉGIE DZ</h1>
-        <button onClick={handleFullReset} className="bg-red-600/10 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black border border-red-500/20 active:bg-red-600 active:text-white transition-all">
-          RESET PARTIE
-        </button>
+        <div className="flex items-center gap-2">
+            <button onClick={handleFullReset} className="bg-red-600/10 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black border border-red-500/20 active:bg-red-600 active:text-white transition-all">
+            RESET
+            </button>
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 pb-[400px] custom-scroll">

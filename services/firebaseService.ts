@@ -1,6 +1,8 @@
-
+// @ts-ignore
 import { initializeApp } from "firebase/app";
+// @ts-ignore
 import { getDatabase, ref, onValue, set } from "firebase/database";
+// @ts-ignore
 import { getAuth, signInAnonymously } from "firebase/auth";
 
 /**
@@ -16,18 +18,28 @@ const firebaseConfig = {
   appId: "1:432453573012:web:7fd15030fa71885548d781"
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getDatabase(app);
+let app: any;
+let auth: any;
+let db: any;
 
-// Connexion anonyme automatique au démarrage
-signInAnonymously(auth)
-  .then(() => {
-    console.log("[Firebase] Authentification anonyme réussie");
-  })
-  .catch((error) => {
-    console.error("[Firebase] Erreur d'authentification:", error);
-  });
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+
+  // Connexion anonyme automatique au démarrage
+  signInAnonymously(auth)
+    .then(() => {
+      console.log("[Firebase] Authentification anonyme réussie");
+    })
+    .catch((error: any) => {
+      console.error("[Firebase] Erreur d'authentification:", error);
+    });
+} catch (e) {
+  console.error("[Firebase] CRITICAL INITIALIZATION ERROR:", e);
+}
+
+export { auth, db };
 
 let currentSessionId: string | null = null;
 
@@ -48,15 +60,14 @@ const getSessionPath = (subPath: string) => {
  * Met à jour l'état global sur Firebase
  */
 export const syncStateToFirebase = async (newState: any) => {
-  if (!currentSessionId) {
-    console.warn("[Firebase] Tentative de sync sans Session ID");
+  if (!currentSessionId || !db) {
+    // console.warn("[Firebase] Tentative de sync sans Session ID ou DB non init");
     return;
   }
-  // On attend que l'auth soit prête si besoin, mais Firebase le gère en offline généralement
   try {
     await set(ref(db, getSessionPath('game_state')), newState);
   } catch (e) {
-    console.error("[Firebase] Erreur d'écriture (Avez-vous mis à jour les règles ?):", e);
+    console.error("[Firebase] Erreur d'écriture:", e);
   }
 };
 
@@ -64,21 +75,18 @@ export const syncStateToFirebase = async (newState: any) => {
  * Écoute les changements d'état en temps réel
  */
 export const listenToFirebaseState = (callback: (state: any) => void) => {
-  if (!currentSessionId) return () => {};
+  if (!currentSessionId || !db) return () => {};
   
   const stateRef = ref(db, getSessionPath('game_state'));
   console.log(`[Firebase] Listening to ${getSessionPath('game_state')}`);
 
-  return onValue(stateRef, (snapshot) => {
+  return onValue(stateRef, (snapshot: any) => {
     const data = snapshot.val();
     if (data) {
-      console.log("[Firebase] Données reçues update");
       callback(data);
-    } else {
-        console.log("[Firebase] Aucune donnée reçue (null) ou chemin vide");
     }
-  }, (error) => {
-    console.error("[Firebase] Erreur de lecture (Permissions ?):", error);
+  }, (error: any) => {
+    console.error("[Firebase] Erreur de lecture:", error);
   });
 };
 
@@ -86,7 +94,7 @@ export const listenToFirebaseState = (callback: (state: any) => void) => {
  * Gère le buzz via une transaction simple
  */
 export const sendBuzzToFirebase = async (side: 'left' | 'right') => {
-  if (!currentSessionId) return;
+  if (!currentSessionId || !db) return;
   const buzzRef = ref(db, getSessionPath('buzz_event'));
   try {
     await set(buzzRef, { side, timestamp: Date.now() });
@@ -99,9 +107,9 @@ export const sendBuzzToFirebase = async (side: 'left' | 'right') => {
  * Écoute les événements de buzz
  */
 export const listenToBuzzEvents = (callback: (side: 'left' | 'right') => void) => {
-  if (!currentSessionId) return () => {};
+  if (!currentSessionId || !db) return () => {};
   const buzzRef = ref(db, getSessionPath('buzz_event'));
-  return onValue(buzzRef, (snapshot) => {
+  return onValue(buzzRef, (snapshot: any) => {
     const data = snapshot.val();
     if (data && data.side) {
       callback(data.side);

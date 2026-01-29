@@ -1,13 +1,13 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 const getAIClient = () => {
+  // Vite remplace 'process.env.API_KEY' par la chaîne de la clé lors du build.
+  // Nous utilisons une affectation directe pour que le remplacement fonctionne.
   // @ts-ignore
   const apiKey = process.env.API_KEY;
   
   if (!apiKey) {
-    console.error("❌ CLÉ API MANQUANTE");
-    throw new Error("Clé API manquante. Vérifiez le fichier .env");
+    throw new Error("Clé API manquante. Vérifiez votre fichier .env ou la configuration Vite.");
   }
   
   return new GoogleGenAI({ apiKey });
@@ -17,7 +17,7 @@ export const generateRound = async (theme: string) => {
   try {
     const ai = getAIClient();
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: `Thème : ${theme}. 
       Génère un bloc JSON pour le jeu "Une Famille en Or" Édition Algérienne. 
       
@@ -55,18 +55,11 @@ export const generateRound = async (theme: string) => {
       throw new Error("Réponse vide de l'IA");
     }
 
-    return JSON.parse(response.text);
+    const cleanText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanText);
   } catch (error: any) {
     console.error("Erreur Gemini generateRound:", error);
-    
-    let msg = error.message || "Erreur lors de la génération";
-    
-    // Détection des erreurs courantes de clé API
-    if (msg.includes("403") || msg.includes("400") || msg.includes("API key")) {
-      msg = "⛔ CLÉ INVALIDE. La clé Firebase ne fonctionne pas pour l'IA. Créez une clé gratuite sur : aistudio.google.com";
-    }
-    
-    throw new Error(msg);
+    throw new Error(error.message || "Erreur lors de la génération");
   }
 };
 
@@ -74,7 +67,7 @@ export const validateAnswer = async (input: string, top10: any[]) => {
   try {
     const ai = getAIClient();
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: `Vérifie si la réponse "${input}" correspond à l'une de ces réponses en Darija : ${JSON.stringify(top10)}. 
       Prends en compte les synonymes et variations d'écriture en alphabet arabe. 
       Réponds EXCLUSIVEMENT en JSON.`,
@@ -92,13 +85,10 @@ export const validateAnswer = async (input: string, top10: any[]) => {
       }
     });
 
-    return JSON.parse(response.text || "{}");
+    const cleanText = (response.text || "{}").replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanText);
   } catch (error: any) {
     console.error("Erreur Gemini validateAnswer:", error);
-    let msg = error.message;
-    if (msg.includes("403") || msg.includes("API key")) {
-        msg = "⛔ Clé API invalide. Utilisez une clé de aistudio.google.com";
-    }
-    throw new Error(msg);
+    throw new Error(error.message);
   }
 };
